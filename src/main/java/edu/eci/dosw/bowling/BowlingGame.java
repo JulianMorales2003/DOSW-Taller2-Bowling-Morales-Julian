@@ -23,6 +23,14 @@ public class BowlingGame {
         currentFrame.addRoll(pins);
     }
 
+    public int score() {
+        int totalScore = 0;
+        for (Frame frame : frames) {
+            totalScore += frame.getPins();
+        }
+        return totalScore;
+    }
+
     public boolean isFinished() {
         return frames.size() == 10 && frames.get(9).isComplete();
     }

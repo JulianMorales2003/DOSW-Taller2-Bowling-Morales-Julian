@@ -19,6 +19,13 @@ public class Frame {
         }
     }
 
+    public int getPins() {
+        int sum = 0;
+        if (firstRoll != -1) sum += firstRoll;
+        if (secondRoll != -1) sum += secondRoll;
+        return sum;
+    }
+
     public int getFirstRoll() {
         return firstRoll;
     }
