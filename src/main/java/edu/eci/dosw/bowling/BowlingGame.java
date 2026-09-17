@@ -11,12 +11,20 @@ public class BowlingGame {
     }
 
     public void roll(int pins) {
+        if (isFinished()) {
+            throw new IllegalStateException("El juego ya ha finalizado");
+        }
+
         if (pins < 0 || pins > 10) {
             throw new IllegalArgumentException("El numero de pinos debe estar entre 0 y 10");
         }
 
         Frame currentFrame = getCurrentFrame();
         currentFrame.addRoll(pins);
+    }
+
+    public boolean isFinished() {
+        return frames.size() == 10 && frames.get(9).isComplete();
     }
 
     private Frame getCurrentFrame() {
