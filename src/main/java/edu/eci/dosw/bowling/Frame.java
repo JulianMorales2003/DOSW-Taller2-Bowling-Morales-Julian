@@ -1,4 +1,29 @@
 package edu.eci.dosw.bowling;
 
 public class Frame {
+    private int firstRoll = -1;
+    private int secondRoll = -1;
+
+    public boolean isComplete() {
+        return firstRoll != -1 && (firstRoll == 10 || secondRoll != -1);
+    }
+
+    public void addRoll(int pins) {
+        if (firstRoll == -1) {
+            firstRoll = pins;
+        } else if (secondRoll == -1) {
+            if (firstRoll + pins > 10) {
+                throw new IllegalArgumentException("La suma de los tiros en un marco no puede superar 10");
+            }
+            secondRoll = pins;
+        }
+    }
+
+    public int getFirstRoll() {
+        return firstRoll;
+    }
+
+    public int getSecondRoll() {
+        return secondRoll;
+    }
 }
