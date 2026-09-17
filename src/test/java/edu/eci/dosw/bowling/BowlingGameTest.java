@@ -44,11 +44,25 @@ class BowlingGameTest {
     @Test
     @DisplayName("B1: Calcular puntaje para una partida abierta sin chuzas ni spares")
     void testB1_openGameScore() {
-        // Simular 10 frames anotando 1 y 2 pinos en cada uno (Suma por frame = 3, Total = 30)
         for (int i = 0; i < 10; i++) {
             game.roll(1);
             game.roll(2);
         }
         assertEquals(30, game.score());
+    }
+
+    @Test
+    @DisplayName("B2: Un spare otorga bono del siguiente lanzamiento")
+    void testB2_spareScore() {
+        game.roll(5);
+        game.roll(5); // Spare en el frame 1
+        game.roll(3); // Tiro de bono = 3
+        game.roll(0);
+        // Resto de tiros en 0
+        for (int i = 0; i < 16; i++) {
+            game.roll(0);
+        }
+        // Frame 1: 10 + 3 = 13. Frame 2: 3 + 0 = 3. Total = 16.
+        assertEquals(16, game.score());
     }
 }
