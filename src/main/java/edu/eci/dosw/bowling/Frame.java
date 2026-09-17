@@ -5,7 +5,7 @@ public class Frame {
     private int secondRoll = -1;
 
     public boolean isComplete() {
-        return firstRoll != -1 && (firstRoll == 10 || secondRoll != -1);
+        return firstRoll != -1 && (isStrike() || secondRoll != -1);
     }
 
     public void addRoll(int pins) {
@@ -19,6 +19,14 @@ public class Frame {
         }
     }
 
+    public boolean isStrike() {
+        return firstRoll == 10;
+    }
+
+    public boolean isSpare() {
+        return !isStrike() && firstRoll != -1 && secondRoll != -1 && (firstRoll + secondRoll == 10);
+    }
+
     public int getPins() {
         int sum = 0;
         if (firstRoll != -1) sum += firstRoll;
@@ -26,11 +34,6 @@ public class Frame {
         return sum;
     }
 
-    public int getFirstRoll() {
-        return firstRoll;
-    }
-
-    public int getSecondRoll() {
-        return secondRoll;
-    }
+    public int getFirstRoll() { return firstRoll; }
+    public int getSecondRoll() { return secondRoll; }
 }
