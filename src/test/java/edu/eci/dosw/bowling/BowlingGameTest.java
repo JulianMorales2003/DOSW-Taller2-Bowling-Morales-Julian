@@ -35,11 +35,20 @@ class BowlingGameTest {
     @Test
     @DisplayName("A5: Lanzar un tiro cuando el juego termino lanza IllegalStateException")
     void testA5_gameAlreadyFinished() {
-        // Simular 10 frames abiertos sin chuzas ni spares (20 tiros de 0 pinos)
         for (int i = 0; i < 20; i++) {
             game.roll(0);
         }
-        // El tiro 21 en un juego sin bonos debe ser rechazado
         assertThrows(IllegalStateException.class, () -> game.roll(0));
+    }
+
+    @Test
+    @DisplayName("B1: Calcular puntaje para una partida abierta sin chuzas ni spares")
+    void testB1_openGameScore() {
+        // Simular 10 frames anotando 1 y 2 pinos en cada uno (Suma por frame = 3, Total = 30)
+        for (int i = 0; i < 10; i++) {
+            game.roll(1);
+            game.roll(2);
+        }
+        assertEquals(30, game.score());
     }
 }
