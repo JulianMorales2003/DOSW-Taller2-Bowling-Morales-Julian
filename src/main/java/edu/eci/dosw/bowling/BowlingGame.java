@@ -32,7 +32,7 @@ public class BowlingGame {
         for (int frame = 0; frame < 10; frame++) {
             if (isStrike(frameIndex)) {
                 score += 10 + strikeBonus(frameIndex);
-                frameIndex += (frameIndex >= 18) ? 1 : 2;
+                frameIndex += 2;
             } else if (isSpare(frameIndex)) {
                 score += 10 + spareBonus(frameIndex);
                 frameIndex += 2;
@@ -70,9 +70,11 @@ public class BowlingGame {
     }
 
     private int strikeBonus(int frameIndex) {
-        int next = (rolls[frameIndex + 1] == 10 && frameIndex < 16) ? frameIndex + 2 : frameIndex + 1;
-        int secondNext = (rolls[frameIndex + 1] == 10 && frameIndex < 16) ? frameIndex + 4 : frameIndex + 2;
-        return rolls[next] + rolls[secondNext];
+        int next = frameIndex + 2;
+        if (rolls[next] == 10 && next < 18) {
+            return 10 + rolls[next + 2];
+        }
+        return rolls[frameIndex + 2] + rolls[frameIndex + 3];
     }
 
     private int spareBonus(int frameIndex) {
