@@ -1,4 +1,4 @@
-﻿package edu.eci.dosw.bowling;
+package edu.eci.dosw.bowling;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
