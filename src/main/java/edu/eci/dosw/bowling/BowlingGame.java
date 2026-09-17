@@ -1,7 +1,7 @@
 package edu.eci.dosw.bowling;
 
 public class BowlingGame {
-    private final int[] rolls = new int[21];
+    private final int[] rolls = new int[22];
     private int currentRoll = 0;
 
     public void roll(int pins) {
@@ -70,11 +70,16 @@ public class BowlingGame {
     }
 
     private int strikeBonus(int frameIndex) {
-        int next = frameIndex + 2;
-        if (rolls[next] == 10 && next < 18) {
-            return 10 + rolls[next + 2];
+        int firstNext = (rolls[frameIndex + 1] == 10 && frameIndex < 18) ? rolls[frameIndex + 1] : rolls[frameIndex + 2];
+        int secondNext = 0;
+
+        if (rolls[frameIndex + 2] == 10) {
+            secondNext = (frameIndex + 4 < rolls.length) ? rolls[frameIndex + 4] : rolls[frameIndex + 3];
+        } else {
+            secondNext = rolls[frameIndex + 3];
         }
-        return rolls[frameIndex + 2] + rolls[frameIndex + 3];
+
+        return firstNext + secondNext;
     }
 
     private int spareBonus(int frameIndex) {
