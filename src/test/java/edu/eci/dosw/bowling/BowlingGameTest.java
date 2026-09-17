@@ -24,4 +24,11 @@ class BowlingGameTest {
     void testA3_rollMoreThanTen() {
         assertThrows(IllegalArgumentException.class, () -> game.roll(11));
     }
+
+    @Test
+    @DisplayName("A4: Suma de tiros en un frame mayor a 10 lanza IllegalArgumentException")
+    void testA4_frameSumMoreThanTen() {
+        game.roll(6);
+        assertThrows(IllegalArgumentException.class, () -> game.roll(5));
+    }
 }
