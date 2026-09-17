@@ -1,4 +1,4 @@
-﻿package edu.eci.dosw.bowling;
+package edu.eci.dosw.bowling;
 
 public class Frame {
 }

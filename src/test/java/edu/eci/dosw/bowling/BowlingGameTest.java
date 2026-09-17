@@ -1,4 +1,4 @@
-﻿package edu.eci.dosw.bowling;
+package edu.eci.dosw.bowling;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -17,5 +17,11 @@ class BowlingGameTest {
     @DisplayName("A2: roll(-1) lanza IllegalArgumentException")
     void testA2_rollNegative() {
         assertThrows(IllegalArgumentException.class, () -> game.roll(-1));
+    }
+
+    @Test
+    @DisplayName("A3: roll(11) lanza IllegalArgumentException")
+    void testA3_rollMoreThanTen() {
+        assertThrows(IllegalArgumentException.class, () -> game.roll(11));
     }
 }
