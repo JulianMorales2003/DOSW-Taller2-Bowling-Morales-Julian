@@ -94,8 +94,8 @@ Commit: `refactor: extrae validacion de rango de pines`
 
 | Momento | Cobertura de líneas | Cobertura de ramas |
 |---|---|---|
-| Antes (solo módulos A, B y C) | `__ %` | `__ %` |
-| Final (con pruebas adicionales) | `__ %` | `__ %` |
+| Antes (solo módulos A, B y C) | 94.5% (86/91) | 88% (62/70) |
+| Final (con pruebas adicionales) | 100% (91/91) | 98% (69/70) |
 
 **Antes**
 
