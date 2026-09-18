@@ -1,39 +1,131 @@
 package edu.eci.dosw.bowling;
 
-public class Frame {
-    private int firstRoll = -1;
-    private int secondRoll = -1;
+import java.util.ArrayList;
+import java.util.List;
 
-    public boolean isComplete() {
-        return firstRoll != -1 && (isStrike() || secondRoll != -1);
+/**
+ * Representa un frame del juego con sus tiros.
+ * <p>
+ * Los frames 1 a 9 admiten maximo 2 tiros (1 solo si es strike).
+ * El frame 10 admite un tercer tiro cuando hay strike o spare.
+ */
+public class Frame {
+
+    public static final int MAX_PINS = 10;
+    public static final int LAST_FRAME_NUMBER = 10;
+
+    private static final int REGULAR_MAX_ROLLS = 2;
+    private static final int TENTH_MAX_ROLLS = 3;
+
+    private final int number;
+    private final List<Integer> rolls = new ArrayList<>();
+
+    /**
+     * @param number numero del frame, entre 1 y 10
+     */
+    public Frame(int number) {
+        if (number < 1 || number > LAST_FRAME_NUMBER) {
+            throw new IllegalArgumentException(
+                    "El numero de frame debe estar entre 1 y " + LAST_FRAME_NUMBER + ": " + number);
+        }
+        this.number = number;
     }
 
-    public void addRoll(int pins) {
-        if (firstRoll == -1) {
-            firstRoll = pins;
-        } else if (secondRoll == -1) {
-            if (firstRoll + pins > 10) {
-                throw new IllegalArgumentException("La suma de los tiros en un marco no puede superar 10");
-            }
-            secondRoll = pins;
+    /**
+     * Valida que una cantidad de pinos este entre 0 y 10.
+     *
+     * @throws IllegalArgumentException si pins &lt; 0 o pins &gt; 10
+     */
+    static void requireValidPins(int pins) {
+        if (pins < 0 || pins > MAX_PINS) {
+            throw new IllegalArgumentException(
+                    "Los pinos derribados deben estar entre 0 y " + MAX_PINS + ": " + pins);
         }
     }
 
+    /**
+     * Registra un tiro en el frame.
+     *
+     * @throws IllegalStateException    si el frame ya esta completo
+     * @throws IllegalArgumentException si los pinos estan fuera de rango o superan los pinos en pie
+     */
+    public void addRoll(int pins) {
+        if (isComplete()) {
+            throw new IllegalStateException("El frame " + number + " ya esta completo");
+        }
+        requireValidPins(pins);
+        int standing = pinsStanding();
+        if (pins > standing) {
+            throw new IllegalArgumentException(
+                    "En el frame " + number + " solo quedan " + standing + " pinos en pie: " + pins);
+        }
+        rolls.add(pins);
+    }
+
+    /**
+     * Pinos que siguen en pie para el proximo tiro. Cuando un tiro deja la pista
+     * limpia se vuelven a parar los 10 pinos (solo pasa en el frame 10).
+     */
+    private int pinsStanding() {
+        int standing = MAX_PINS;
+        for (int pins : rolls) {
+            standing -= pins;
+            if (standing == 0) {
+                standing = MAX_PINS;
+            }
+        }
+        return standing;
+    }
+
+    public boolean isComplete() {
+        if (isTenth()) {
+            return rolls.size() == TENTH_MAX_ROLLS
+                    || (rolls.size() == REGULAR_MAX_ROLLS && !earnsBonusRoll());
+        }
+        return isStrike() || rolls.size() == REGULAR_MAX_ROLLS;
+    }
+
     public boolean isStrike() {
-        return firstRoll == 10;
+        return !rolls.isEmpty() && rolls.get(0) == MAX_PINS;
     }
 
     public boolean isSpare() {
-        return !isStrike() && firstRoll != -1 && secondRoll != -1 && (firstRoll + secondRoll == 10);
+        return rolls.size() >= REGULAR_MAX_ROLLS
+                && !isStrike()
+                && rolls.get(0) + rolls.get(1) == MAX_PINS;
     }
 
-    public int getPins() {
-        int sum = 0;
-        if (firstRoll != -1) sum += firstRoll;
-        if (secondRoll != -1) sum += secondRoll;
-        return sum;
+    private boolean earnsBonusRoll() {
+        return isStrike() || isSpare();
     }
 
-    public int getFirstRoll() { return firstRoll; }
-    public int getSecondRoll() { return secondRoll; }
+    public boolean isTenth() {
+        return number == LAST_FRAME_NUMBER;
+    }
+
+    public FrameType getType() {
+        if (isTenth()) {
+            return FrameType.TENTH;
+        }
+        if (isStrike()) {
+            return FrameType.STRIKE;
+        }
+        if (isSpare()) {
+            return FrameType.SPARE;
+        }
+        return FrameType.NORMAL;
+    }
+
+    /** Suma de los pinos derribados en este frame (sin bonos). */
+    public int getPinsKnocked() {
+        return rolls.stream().mapToInt(Integer::intValue).sum();
+    }
+
+    public int getNumber() {
+        return number;
+    }
+
+    public List<Integer> getRolls() {
+        return List.copyOf(rolls);
+    }
 }

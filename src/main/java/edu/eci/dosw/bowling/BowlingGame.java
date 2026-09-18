@@ -1,95 +1,99 @@
 package edu.eci.dosw.bowling;
 
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Motor de un juego de Bowling para un jugador.
+ * Un juego tiene exactamente 10 frames.
+ */
 public class BowlingGame {
-    private final int[] rolls = new int[21];
-    private int currentRoll = 0;
 
+    public static final int MAX_FRAMES = Frame.LAST_FRAME_NUMBER;
+
+    private static final int STRIKE_BONUS_ROLLS = 2;
+    private static final int SPARE_BONUS_ROLLS = 1;
+
+    private final List<Frame> frames;
+    private int currentFrame;
+
+    public BowlingGame() {
+        this.frames = new ArrayList<>();
+        this.currentFrame = 0;
+    }
+
+    /**
+     * Registra pinos derribados.
+     *
+     * @throws IllegalArgumentException si pins &lt; 0, pins &gt; 10 o supera los pinos en pie del frame
+     * @throws IllegalStateException    si el juego ya termino
+     */
     public void roll(int pins) {
-        if (pins < 0 || pins > 10) {
-            throw new IllegalArgumentException("Los pinos deben estar entre 0 y 10");
+        Frame.requireValidPins(pins);
+        if (isComplete()) {
+            throw new IllegalStateException("El juego ya termino: no se admiten mas tiros");
         }
-        if (isFinished()) {
-            throw new IllegalStateException("El juego ya ha finalizado");
+        Frame frame = currentFrame();
+        frame.addRoll(pins);
+        if (frame.isComplete()) {
+            currentFrame++;
         }
-
-        if (isSecondRollInStandardFrame()) {
-            if (rolls[currentRoll - 1] + pins > 10) {
-                throw new IllegalArgumentException("La suma de pines en un frame no puede superar 10");
-            }
-        }
-
-        rolls[currentRoll++] = pins;
     }
 
+    private Frame currentFrame() {
+        if (frames.size() == currentFrame) {
+            frames.add(new Frame(currentFrame + 1));
+        }
+        return frames.get(currentFrame);
+    }
+
+    /**
+     * Puntaje total.
+     *
+     * @throws IllegalStateException si el juego no esta completo
+     */
     public int score() {
-        int score = 0;
-        int rollIndex = 0;
-
-        for (int frame = 0; frame < 10; frame++) {
-            if (isStrike(rollIndex)) {
-                score += 10 + strikeBonus(rollIndex);
-                rollIndex += 1;
-            } else if (isSpare(rollIndex)) {
-                score += 10 + spareBonus(rollIndex);
-                rollIndex += 2;
-            } else {
-                score += sumOfBallsInFrame(rollIndex);
-                rollIndex += 2;
-            }
+        if (!isComplete()) {
+            throw new IllegalStateException(
+                    "El juego no ha terminado: van " + currentFrame + " de " + MAX_FRAMES + " frames");
         }
-        return score;
-    }
+        List<Integer> allRolls = frames.stream()
+                .flatMap(frame -> frame.getRolls().stream())
+                .toList();
 
-    public boolean isFinished() {
-        int rollIndex = 0;
-        for (int frame = 0; frame < 9; frame++) {
-            if (isStrike(rollIndex)) {
-                rollIndex += 1;
-            } else {
-                rollIndex += 2;
-            }
+        int total = 0;
+        int firstRollOfFrame = 0;
+        for (Frame frame : frames) {
+            total += frameScore(frame, allRolls, firstRollOfFrame);
+            firstRollOfFrame += frame.getRolls().size();
         }
+        return total;
+    }
 
-        if (rollIndex >= currentRoll) return false;
-
-        if (isStrike(rollIndex) || isSpare(rollIndex)) {
-            return currentRoll >= rollIndex + 3;
-        } else {
-            return currentRoll >= rollIndex + 2;
+    private int frameScore(Frame frame, List<Integer> allRolls, int firstRoll) {
+        if (frame.isStrike()) {
+            return Frame.MAX_PINS + bonus(allRolls, firstRoll + 1, STRIKE_BONUS_ROLLS);
         }
-    }
-
-    private boolean isSecondRollInStandardFrame() {
-        int rollIndex = 0;
-        for (int frame = 0; frame < 9; frame++) {
-            if (rollIndex == currentRoll) return false;
-            if (isStrike(rollIndex)) {
-                rollIndex += 1;
-            } else {
-                if (rollIndex + 1 == currentRoll) return true;
-                rollIndex += 2;
-            }
+        if (frame.isSpare()) {
+            return Frame.MAX_PINS + bonus(allRolls, firstRoll + 2, SPARE_BONUS_ROLLS);
         }
-        return false;
+        return frame.getPinsKnocked();
     }
 
-    private boolean isStrike(int rollIndex) {
-        return rolls[rollIndex] == 10;
+    private int bonus(List<Integer> allRolls, int from, int count) {
+        int total = 0;
+        for (int i = from; i < from + count && i < allRolls.size(); i++) {
+            total += allRolls.get(i);
+        }
+        return total;
     }
 
-    private boolean isSpare(int rollIndex) {
-        return rolls[rollIndex] + rolls[rollIndex + 1] == 10;
+    /** true cuando los 10 frames han sido completados. */
+    public boolean isComplete() {
+        return currentFrame == MAX_FRAMES;
     }
 
-    private int strikeBonus(int rollIndex) {
-        return rolls[rollIndex + 1] + rolls[rollIndex + 2];
-    }
-
-    private int spareBonus(int rollIndex) {
-        return rolls[rollIndex + 2];
-    }
-
-    private int sumOfBallsInFrame(int rollIndex) {
-        return rolls[rollIndex] + rolls[rollIndex + 1];
+    public List<Frame> getFrames() {
+        return List.copyOf(frames);
     }
 }
