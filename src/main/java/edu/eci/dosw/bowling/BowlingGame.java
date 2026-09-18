@@ -1,7 +1,7 @@
 package edu.eci.dosw.bowling;
 
 public class BowlingGame {
-    private final int[] rolls = new int[22];
+    private final int[] rolls = new int[21];
     private int currentRoll = 0;
 
     public void roll(int pins) {
@@ -12,81 +12,84 @@ public class BowlingGame {
             throw new IllegalStateException("El juego ya ha finalizado");
         }
 
-        if (currentRoll % 2 == 1 && rolls[currentRoll - 1] != 10 && currentRoll < 18) {
+        if (isSecondRollInStandardFrame()) {
             if (rolls[currentRoll - 1] + pins > 10) {
                 throw new IllegalArgumentException("La suma de pines en un frame no puede superar 10");
             }
         }
 
         rolls[currentRoll++] = pins;
-
-        if (pins == 10 && currentRoll < 18 && currentRoll % 2 == 1) {
-            currentRoll++;
-        }
     }
 
     public int score() {
         int score = 0;
-        int frameIndex = 0;
+        int rollIndex = 0;
 
         for (int frame = 0; frame < 10; frame++) {
-            if (isStrike(frameIndex)) {
-                score += 10 + strikeBonus(frameIndex);
-                frameIndex += 2;
-            } else if (isSpare(frameIndex)) {
-                score += 10 + spareBonus(frameIndex);
-                frameIndex += 2;
+            if (isStrike(rollIndex)) {
+                score += 10 + strikeBonus(rollIndex);
+                rollIndex += 1;
+            } else if (isSpare(rollIndex)) {
+                score += 10 + spareBonus(rollIndex);
+                rollIndex += 2;
             } else {
-                score += sumOfBallsInFrame(frameIndex);
-                frameIndex += 2;
+                score += sumOfBallsInFrame(rollIndex);
+                rollIndex += 2;
             }
         }
         return score;
     }
 
     public boolean isFinished() {
-        int frameIndex = 0;
+        int rollIndex = 0;
         for (int frame = 0; frame < 9; frame++) {
-            frameIndex += 2;
+            if (isStrike(rollIndex)) {
+                rollIndex += 1;
+            } else {
+                rollIndex += 2;
+            }
         }
 
-        if (frameIndex >= currentRoll) return false;
+        if (rollIndex >= currentRoll) return false;
 
-        if (isStrike(frameIndex)) {
-            return currentRoll >= frameIndex + 3;
-        } else if (isSpare(frameIndex)) {
-            return currentRoll >= frameIndex + 3;
+        if (isStrike(rollIndex) || isSpare(rollIndex)) {
+            return currentRoll >= rollIndex + 3;
         } else {
-            return currentRoll >= frameIndex + 2;
+            return currentRoll >= rollIndex + 2;
         }
     }
 
-    private boolean isStrike(int frameIndex) {
-        return rolls[frameIndex] == 10;
-    }
-
-    private boolean isSpare(int frameIndex) {
-        return rolls[frameIndex] + rolls[frameIndex + 1] == 10;
-    }
-
-    private int strikeBonus(int frameIndex) {
-        int firstNext = (rolls[frameIndex + 1] == 10 && frameIndex < 18) ? rolls[frameIndex + 1] : rolls[frameIndex + 2];
-        int secondNext = 0;
-
-        if (rolls[frameIndex + 2] == 10) {
-            secondNext = (frameIndex + 4 < rolls.length) ? rolls[frameIndex + 4] : rolls[frameIndex + 3];
-        } else {
-            secondNext = rolls[frameIndex + 3];
+    private boolean isSecondRollInStandardFrame() {
+        int rollIndex = 0;
+        for (int frame = 0; frame < 9; frame++) {
+            if (rollIndex == currentRoll) return false;
+            if (isStrike(rollIndex)) {
+                rollIndex += 1;
+            } else {
+                if (rollIndex + 1 == currentRoll) return true;
+                rollIndex += 2;
+            }
         }
-
-        return firstNext + secondNext;
+        return false;
     }
 
-    private int spareBonus(int frameIndex) {
-        return rolls[frameIndex + 2];
+    private boolean isStrike(int rollIndex) {
+        return rolls[rollIndex] == 10;
     }
 
-    private int sumOfBallsInFrame(int frameIndex) {
-        return rolls[frameIndex] + rolls[frameIndex + 1];
+    private boolean isSpare(int rollIndex) {
+        return rolls[rollIndex] + rolls[rollIndex + 1] == 10;
+    }
+
+    private int strikeBonus(int rollIndex) {
+        return rolls[rollIndex + 1] + rolls[rollIndex + 2];
+    }
+
+    private int spareBonus(int rollIndex) {
+        return rolls[rollIndex + 2];
+    }
+
+    private int sumOfBallsInFrame(int rollIndex) {
+        return rolls[rollIndex] + rolls[rollIndex + 1];
     }
 }
