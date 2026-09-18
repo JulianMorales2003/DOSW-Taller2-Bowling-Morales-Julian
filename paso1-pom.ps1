@@ -1,0 +1,119 @@
+﻿# ============================================================
+#  PASO 1 - pom.xml del enunciado (Java 24, JUnit 5.13.4, JaCoCo, SonarQube)
+#  Ejecutar desde la RAIZ del repo DOSW-Taller2-Bowling-Morales-Julian
+# ============================================================
+
+if (-not (Test-Path ".git")) {
+    Write-Host "ERROR: no estas en la raiz del repositorio. Haz 'cd' a la carpeta del repo." -ForegroundColor Red
+    exit 1
+}
+
+function Write-Utf8($RelPath, $Content) {
+    $full = Join-Path (Get-Location) $RelPath
+    $dir = Split-Path -Parent $full
+    if ($dir -and -not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
+    [System.IO.File]::WriteAllText($full, $Content, (New-Object System.Text.UTF8Encoding $false))
+    Write-Host "  escrito: $RelPath" -ForegroundColor Green
+}
+
+Write-Host ""
+Write-Host "PASO 1 - pom.xml del enunciado (Java 24, JUnit 5.13.4, JaCoCo, SonarQube)" -ForegroundColor Cyan
+Write-Host ""
+
+$pom = @'
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>edu.eci.dosw</groupId>
+    <artifactId>bowling-tdd</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>bowling-tdd</name>
+    <description>Motor de puntuacion de Bowling construido con TDD - DOSW 2026-2</description>
+
+    <properties>
+        <maven.compiler.release>24</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <junit.version>5.13.4</junit.version>
+        <jacoco.version>0.8.15</jacoco.version>
+        <sonar.version>5.7.0.6970</sonar.version>
+
+        <!-- SonarQube -->
+        <sonar.projectKey>bowling-tdd</sonar.projectKey>
+        <sonar.projectName>Bowling TDD Taller 02</sonar.projectName>
+        <sonar.host.url>http://localhost:9000</sonar.host.url>
+        <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+
+            <!-- JaCoCo: cobertura — falla si line coverage < 85% -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+                <executions>
+                    <execution>
+                        <goals><goal>prepare-agent</goal></goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals><goal>report</goal></goals>
+                    </execution>
+                    <execution>
+                        <id>check</id>
+                        <phase>verify</phase>
+                        <goals><goal>check</goal></goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.85</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- SonarQube: analisis estatico -->
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <version>${sonar.version}</version>
+            </plugin>
+
+        </plugins>
+    </build>
+</project>
+'@
+Write-Utf8 "pom.xml" $pom
+
+Write-Host ""
+Write-Host "Ahora ejecuta:" -ForegroundColor White
+Write-Host "  mvn clean test" -ForegroundColor White
+Write-Host "Deben pasar tus 8 pruebas actuales. Luego:" -ForegroundColor White
+Write-Host "  git add pom.xml" -ForegroundColor White
+Write-Host "  git commit -m `"chore: configura Java 24, JUnit 5.13.4, JaCoCo y SonarQube`"" -ForegroundColor White
+Write-Host ""
