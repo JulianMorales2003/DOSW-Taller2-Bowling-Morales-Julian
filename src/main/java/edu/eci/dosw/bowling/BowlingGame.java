@@ -11,14 +11,13 @@ public class BowlingGame {
 
     public static final int MAX_FRAMES = Frame.LAST_FRAME_NUMBER;
 
-    private static final int STRIKE_BONUS_ROLLS = 2;
-    private static final int SPARE_BONUS_ROLLS = 1;
-
     private final List<Frame> frames;
+    private final BowlingScorer scorer;
     private int currentFrame;
 
     public BowlingGame() {
         this.frames = new ArrayList<>();
+        this.scorer = new BowlingScorer();
         this.currentFrame = 0;
     }
 
@@ -57,35 +56,7 @@ public class BowlingGame {
             throw new IllegalStateException(
                     "El juego no ha terminado: van " + currentFrame + " de " + MAX_FRAMES + " frames");
         }
-        List<Integer> allRolls = frames.stream()
-                .flatMap(frame -> frame.getRolls().stream())
-                .toList();
-
-        int total = 0;
-        int firstRollOfFrame = 0;
-        for (Frame frame : frames) {
-            total += frameScore(frame, allRolls, firstRollOfFrame);
-            firstRollOfFrame += frame.getRolls().size();
-        }
-        return total;
-    }
-
-    private int frameScore(Frame frame, List<Integer> allRolls, int firstRoll) {
-        if (frame.isStrike()) {
-            return Frame.MAX_PINS + bonus(allRolls, firstRoll + 1, STRIKE_BONUS_ROLLS);
-        }
-        if (frame.isSpare()) {
-            return Frame.MAX_PINS + bonus(allRolls, firstRoll + 2, SPARE_BONUS_ROLLS);
-        }
-        return frame.getPinsKnocked();
-    }
-
-    private int bonus(List<Integer> allRolls, int from, int count) {
-        int total = 0;
-        for (int i = from; i < from + count && i < allRolls.size(); i++) {
-            total += allRolls.get(i);
-        }
-        return total;
+        return scorer.calculate(frames);
     }
 
     /** true cuando los 10 frames han sido completados. */
